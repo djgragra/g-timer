@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<!--
+  G-Timer — block-based recording timer for radio
+  © 2026 Graziano Melzi · OnAir Garage — https://onairgarage.com — MIT License
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="description" content="Block-based recording timer for radio: programs, pre-roll, overrun tracking, multi-take and exportable reports.">
+  <meta name="author" content="Graziano Melzi · OnAir Garage">
+  <meta name="theme-color" content="#06080f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/g-timer.css">
+  <title>G-Timer</title>
+</head>
+
+<body class="mode-free">
+  <div class="root">
+    <!-- HEADER -->
+    <header>
+      <div class="logo-area" id="logoArea">
+        <img id="userLogo" class="hidden" alt="">
+        <span class="app-name" id="appName">G-<b>TIMER</b></span>
+      </div>
+      <div class="hd"></div>
+
+      <!-- Mode toggle -->
+      <div class="tog">
+        <button class="tog-btn act-blue" id="modeFreeBtn" type="button" data-i18n="mode.free">Free</button>
+        <button class="tog-btn" id="modeProgBtn" type="button" data-i18n="mode.prog">Program</button>
+      </div>
+
+      <!-- Program selector (program mode only) -->
+      <div class="prog-select-wrap" id="progSelectWrap">
+        <select class="prog-select" id="progSelect"></select>
+        <button class="hbtn" id="manageBtn" type="button" data-i18n-title="hdr.manage" title="Manage programs">⚙</button>
+      </div>
+
+      <div class="hsp"></div>
+      <div class="h-date" id="hDate">—</div>
+      <div class="h-time" id="hTime">00:00:00</div>
+      <div class="hd"></div>
+      <div class="tog lang" role="group" aria-label="Language">
+        <button class="tog-btn" id="langEn" type="button" data-lang="en">EN</button>
+        <button class="tog-btn" id="langIt" type="button" data-lang="it">IT</button>
+      </div>
+      <button class="hbtn" id="logoBtn" type="button" data-i18n-title="hdr.logo" title="Station logo">🖼</button>
+      <button class="hbtn" id="infoBtn" type="button" data-i18n-title="hdr.info" title="About">ℹ</button>
+      <button class="hbtn" id="fsBtn" type="button" data-i18n-title="hdr.fs" title="Fullscreen (F)">⛶</button>
+    </header>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="stage">
+        <!-- Quick presets (free mode only) -->
+        <div class="presets" id="presets">
+          <button class="chip" type="button" data-min="1">01:00</button>
+          <button class="chip" type="button" data-min="2">02:00</button>
+          <button class="chip" type="button" data-min="3">03:00</button>
+          <button class="chip" type="button" data-min="5">05:00</button>
+          <button class="chip" type="button" data-min="10">10:00</button>
+          <button class="chip" type="button" data-min="15">15:00</button>
+        </div>
+
+        <!-- Block meta (program mode only) -->
+        <div class="block-meta" id="blockMeta">
+          <span class="bm-prog" id="bmProg">—</span>
+          <span class="bm-sep">·</span>
+          <span class="bm-pos" id="bmPos">Block 1 / 1</span>
+          <span class="bm-sep">·</span>
+          <span class="bm-label" id="bmLabel">Block 1</span>
+        </div>
+
+        <!-- Display -->
+        <div class="display-wrap">
+          <div class="state-badge" id="stateBadge"><span class="sb-dot"></span><span id="stateText">READY</span></div>
+          <div class="rec-display" id="timer">00:00</div>
+          <div class="elapsed" id="elapsed">Elapsed 00:00 / Target 00:00</div>
+          <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+
+        <!-- Manual input (free mode only) -->
+        <div class="rec-inputs" id="freeInputs">
+          <input class="rec-input" type="number" id="minutes" inputmode="numeric" min="0" max="999" placeholder="MIN" data-i18n-placeholder="in.min" data-i18n-aria="in.minutes" aria-label="Minutes">
+          <span class="rec-sep">:</span>
+          <input class="rec-input" type="number" id="seconds" inputmode="numeric" min="0" max="59" placeholder="SEC" data-i18n-placeholder="in.sec" data-i18n-aria="in.seconds" aria-label="Seconds">
+        </div>
+
+        <!-- Edit while paused -->
+        <div class="pause-edit" id="pauseEdit">
+          <span class="pe-lbl" data-i18n="pause.edit">Paused — adjust remaining</span>
+          <div class="pe-row">
+            <button class="pe-btn" type="button" data-adj="-60">−60</button>
+            <button class="pe-btn" type="button" data-adj="-10">−10</button>
+            <input class="pe-in" id="pauseIn" type="text" inputmode="text" placeholder="mm:ss">
+            <button class="pe-btn" type="button" data-adj="10">+10</button>
+            <button class="pe-btn" type="button" data-adj="60">+60</button>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="rec-btns">
+          <button class="rec-btn start" id="start" type="button" data-i18n="btn.start">▶ Start</button>
+          <button class="rec-btn stop" id="stop" type="button" data-i18n="btn.pause">⏸ Pause</button>
+          <button class="rec-btn next" id="next" type="button" data-i18n="btn.next">⏭ End block</button>
+          <button class="rec-btn redo" id="redo" type="button" data-i18n="btn.redo">↻ Redo</button>
+          <button class="rec-btn back" id="back" type="button" data-i18n="btn.back">◀ Back</button>
+          <button class="rec-btn reset" id="reset" type="button" data-i18n="btn.reset">↺ Reset</button>
+        </div>
+
+        <!-- Options -->
+        <div class="options">
+          <button class="opt" id="soundToggle" type="button" data-i18n-title="opt.sound" title="Sound (S)">🔇</button>
+          <button class="opt" id="prerollToggle" type="button" data-i18n-title="opt.preroll" title="Pre-roll 3·2·1">3·2·1</button>
+          <button class="opt" id="dynToggle" type="button" data-i18n="opt.dyn" data-i18n-title="opt.dynTitle" title="Dynamic timing (recalculate blocks)">DYN</button>
+          <button class="opt" id="reportBtn" type="button" data-i18n="opt.report" data-i18n-title="opt.reportTitle" title="Reopen last report">📋 Report</button>
+          <span class="hint" data-i18n="hint">SPACE start/pause · N end block · R reset · F fullscreen</span>
+        </div>
+      </div>
+
+      <!-- Blocks panel (program mode only) -->
+      <aside class="blocks-panel" id="blocksPanel">
+        <div class="bp-head">
+          <span class="bp-title" data-i18n="bp.title">Blocks</span>
+          <button class="bp-restore" id="restoreBtn" type="button" data-i18n="bp.restore" data-i18n-title="bp.restoreTitle" title="Restore saved durations">↺ Restore</button>
+        </div>
+        <div class="bp-list" id="blocksList"></div>
+        <div class="bp-foot" id="blocksFoot">Total 00:00</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- PRE-ROLL OVERLAY -->
+  <div class="preroll" id="preroll"><div class="preroll-num" id="prerollNum">3</div></div>
+
+  <!-- ABOUT MODAL -->
+  <div class="about-overlay" id="aboutOverlay">
+    <div class="about-modal">
+      <div class="about-head">
+        <img src="icons/icon.svg" alt="">
+        <div>
+          <div class="ah-t1">OnAir Garage</div>
+          <div class="ah-t2">G-TIMER</div>
+          <div class="ah-ver" id="aboutVer">Version</div>
+        </div>
+      </div>
+      <div class="about-body">
+        <p data-i18n="about.desc">Studio timer for block-based radio recordings: saved programs, per-block durations, pre-roll and overrun tracking.</p>
+        <div class="about-credits">
+          <div class="about-row"><span class="about-label" data-i18n="about.dev">Developed by</span><span>Graziano Melzi · OnAir Garage</span></div>
+          <div class="about-row"><span class="about-label">Email</span><a href="mailto:hello@onairgarage.com">hello@onairgarage.com</a></div>
+          <div class="about-row"><span class="about-label" data-i18n="about.web">Website</span><a href="https://onairgarage.com/tools/g-timer/" target="_blank" rel="noopener">onairgarage.com</a></div>
+          <div class="about-row"><span class="about-label" data-i18n="about.license">License</span><span>MIT · © 2026 Graziano Melzi</span></div>
+          <div class="about-row"><span class="about-label" data-i18n="about.privacy">Privacy</span><span data-i18n="about.privacyText">All data stays in your browser</span></div>
+        </div>
+      </div>
+      <div class="about-foot">
+        <button class="about-close" id="aboutClose" type="button" data-i18n="btn.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGO MODAL -->
+  <div class="modal-overlay" id="logoOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title" data-i18n="logo.title">Station logo</span>
+        <button class="modal-x" id="logoX" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="logo-note" data-i18n="logo.note">Upload your station logo (PNG, JPG or SVG). It is resized to max 512 px and stored only in this browser.</p>
+        <div class="logo-preview">
+          <img id="logoPreview" class="hidden" alt="">
+          <span class="logo-empty" id="logoEmpty" data-i18n="logo.none">No logo</span>
+        </div>
+        <p class="logo-err hidden" id="logoErr"></p>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn danger" id="logoRemove" type="button" data-i18n="logo.remove">Remove</button>
+        <div class="mf-sp"></div>
+        <button class="mbtn primary" id="logoUpload" type="button" data-i18n="logo.upload">⤓ Upload logo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANAGE MODAL -->
+  <div class="modal-overlay" id="manageOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title" data-i18n="manage.title">Manage programs</span>
+        <button class="modal-x" id="manageX" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="prog-list" id="manageList"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn ghost" id="importBtn" type="button" data-i18n="manage.import">⤓ Import</button>
+        <button class="mbtn ghost" id="exportBtn" type="button" data-i18n="manage.export">⤒ Export</button>
+        <div class="mf-sp"></div>
+        <button class="mbtn primary" id="newProgBtn" type="button" data-i18n="manage.new">+ New</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITOR MODAL -->
+  <div class="modal-overlay" id="editorOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title" id="editorTitle">New program</span>
+        <button class="modal-x" id="editorX" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="fld">
+          <span class="fld-lbl" data-i18n="ed.name">Program name</span>
+          <input type="text" class="fld-in" id="edName" data-i18n-placeholder="ed.namePh" placeholder="e.g. Morning Show" maxlength="60">
+        </label>
+        <div class="ed-blocks-head">
+          <span data-i18n="bp.title">Blocks</span>
+          <span class="ed-total" id="edTotal">Total 00:00</span>
+        </div>
+        <div class="ed-blocks" id="edBlocks"></div>
+        <button class="mbtn ghost addrow" id="addRowBtn" type="button" data-i18n="ed.add">+ Add block</button>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn danger" id="edDelete" type="button" data-i18n="ed.delete">Delete</button>
+        <div class="mf-sp"></div>
+        <button class="mbtn ghost" id="edCancel" type="button" data-i18n="btn.cancel">Cancel</button>
+        <button class="mbtn primary" id="edSave" type="button" data-i18n="ed.save">💾 Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT MODAL -->
+  <div class="modal-overlay" id="reportOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title" id="reportTitle">Recording report</span>
+        <button class="modal-x" id="reportX" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <table class="report-table" id="reportTable"></table>
+        <div class="report-tot" id="reportTot"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="mbtn ghost" id="reportCopy" type="button" data-i18n="rep.copy">⧉ Copy</button>
+        <button class="mbtn ghost" id="reportExport" type="button" data-i18n="rep.export">⤒ Export .txt</button>
+        <div class="mf-sp"></div>
+        <button class="mbtn primary" id="reportClose" type="button" data-i18n="btn.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="importFile" class="hidden" accept="application/json,.json">
+  <input type="file" id="logoFile" class="hidden" accept="image/png,image/jpeg,image/svg+xml,.png,.jpg,.jpeg,.svg">
+
+  <script src="js/i18n.js"></script>
+  <script src="js/g-timer.js"></script>
+</body>
+</html>
