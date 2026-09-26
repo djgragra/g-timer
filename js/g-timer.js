@@ -862,27 +862,31 @@ window.GTimer = (function () {
     const okType = /^image\/(png|jpeg|svg\+xml)$/.test(f.type) || /\.(png|jpe?g|svg)$/i.test(f.name);
     if (!okType) { logoError("logo.errType"); return; }
     const isJpeg = f.type === "image/jpeg" || /\.jpe?g$/i.test(f.name);
-    const url = URL.createObjectURL(f);
-    const img = new Image();
-    img.onload = () => {
-      let w = img.naturalWidth || LOGO_MAX, h = img.naturalHeight || LOGO_MAX;
-      const scale = Math.min(1, LOGO_MAX / Math.max(w, h));
-      w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
-      const cv = document.createElement("canvas");
-      cv.width = w; cv.height = h;
-      const ctx = cv.getContext("2d");
-      ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      let data;
-      try { data = isJpeg ? cv.toDataURL("image/jpeg", 0.9) : cv.toDataURL("image/png"); }
-      catch (err) { logoError("logo.errRead"); return; }
-      try { localStorage.setItem(LOGOKEY, data); }
-      catch (err) { logoError("logo.errSave"); return; }
-      logoError(null); showLogo();
+    // Read as a data URL (no blob: URLs, so it works with a strict img-src CSP)
+    const reader = new FileReader();
+    reader.onerror = () => logoError("logo.errRead");
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.naturalWidth || LOGO_MAX, h = img.naturalHeight || LOGO_MAX;
+        const scale = Math.min(1, LOGO_MAX / Math.max(w, h));
+        w = Math.max(1, Math.round(w * scale)); h = Math.max(1, Math.round(h * scale));
+        const cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        const ctx = cv.getContext("2d");
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+        let data;
+        try { data = isJpeg ? cv.toDataURL("image/jpeg", 0.9) : cv.toDataURL("image/png"); }
+        catch (err) { logoError("logo.errRead"); return; }
+        try { localStorage.setItem(LOGOKEY, data); }
+        catch (err) { logoError("logo.errSave"); return; }
+        logoError(null); showLogo();
+      };
+      img.onerror = () => logoError("logo.errRead");
+      img.src = reader.result;
     };
-    img.onerror = () => { URL.revokeObjectURL(url); logoError("logo.errRead"); };
-    img.src = url;
+    reader.readAsDataURL(f);
   });
 
   /* ══════════ About / Fullscreen / options ══════════ */

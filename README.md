@@ -61,7 +61,7 @@ Then open <http://localhost:8000/>.
 The page has no inline scripts or styles, so it works with a strict Content Security Policy. A `<meta>` CSP is included. If you control the server, you can also send it as an HTTP header:
 
 ```
-Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'
 ```
 
 ### Program file format
