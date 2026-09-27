@@ -4,7 +4,7 @@
 window.GTimer = (function () {
   "use strict";
 
-  const VERSION = "2026.9.1";
+  const VERSION = "2026.9.2";
   const I18N = window.GTimerI18n;
   const t = I18N.t;
 
@@ -503,32 +503,60 @@ window.GTimer = (function () {
   }
 
   /* ══════════ Programs: storage (browser only) ══════════ */
+  // Bilingual text for the built-in sample programs, so they can follow the
+  // interface language even after being saved to localStorage (see relocalizeSamples).
+  const SAMPLE_I18N = {
+    "sample-show": {
+      en: { name: "Sample · One-hour show", blocks: ["Opening", "Segment 1", "Segment 2", "Interview", "Segment 3", "Closing"] },
+      it: { name: "Esempio · Show di un'ora", blocks: ["Apertura", "Segmento 1", "Segmento 2", "Intervista", "Segmento 3", "Chiusura"] }
+    },
+    "sample-podcast": {
+      en: { name: "Sample · Podcast episode", blocks: ["Cold open", "Intro & theme", "Main topic", "Listener questions", "Outro"] },
+      it: { name: "Esempio · Puntata podcast", blocks: ["Cold open", "Sigla e presentazione", "Tema principale", "Domande degli ascoltatori", "Saluti"] }
+    },
+    "sample-news": {
+      en: { name: "Sample · 5' news bulletin", blocks: ["Headlines", "Stories", "Weather", "Close"] },
+      it: { name: "Esempio · Notiziario 5'", blocks: ["Titoli", "Notizie", "Meteo", "Chiusura"] }
+    }
+  };
+  const SAMPLE_DURATIONS = {
+    "sample-show": [120, 720, 720, 900, 600, 120],
+    "sample-podcast": [60, 90, 1200, 480, 60],
+    "sample-news": [30, 210, 40, 20]
+  };
   function samplePrograms() {
-    const it = I18N.lang === "it";
-    const mk = (id, name, list) => ({ id, name, blocks: list.map(([label, sec]) => ({ label, sec })), updated: Date.now() });
-    return [
-      mk("sample-show", it ? "Esempio · Show di un'ora" : "Sample · One-hour show", [
-        [it ? "Apertura" : "Opening", 120],
-        [it ? "Segmento 1" : "Segment 1", 720],
-        [it ? "Segmento 2" : "Segment 2", 720],
-        [it ? "Intervista" : "Interview", 900],
-        [it ? "Segmento 3" : "Segment 3", 600],
-        [it ? "Chiusura" : "Closing", 120]
-      ]),
-      mk("sample-podcast", it ? "Esempio · Puntata podcast" : "Sample · Podcast episode", [
-        ["Cold open", 60],
-        [it ? "Sigla e presentazione" : "Intro & theme", 90],
-        [it ? "Tema principale" : "Main topic", 1200],
-        [it ? "Domande degli ascoltatori" : "Listener questions", 480],
-        [it ? "Saluti" : "Outro", 60]
-      ]),
-      mk("sample-news", it ? "Esempio · Notiziario 5'" : "Sample · 5' news bulletin", [
-        [it ? "Titoli" : "Headlines", 30],
-        [it ? "Notizie" : "Stories", 210],
-        [it ? "Meteo" : "Weather", 40],
-        [it ? "Chiusura" : "Close", 20]
-      ])
-    ];
+    const lang = I18N.lang === "it" ? "it" : "en";
+    return Object.keys(SAMPLE_I18N).map((id) => {
+      const t = SAMPLE_I18N[id][lang], durations = SAMPLE_DURATIONS[id];
+      return { id, name: t.name, blocks: t.blocks.map((label, i) => ({ label, sec: durations[i] })), updated: Date.now() };
+    });
+  }
+  // If a program is an untouched sample (still named and labelled exactly as
+  // either language's version), relabel it to the current language. Returns
+  // true if it changed anything.
+  function relocalizeSample(p) {
+    const t = SAMPLE_I18N[p.id];
+    if (!t) return false;
+    const from = ["en", "it"].find((l) => t[l].name === p.name && p.blocks.length === t[l].blocks.length && p.blocks.every((b, i) => b.label === t[l].blocks[i]));
+    if (!from) return false;
+    const to = I18N.lang === "it" ? "it" : "en";
+    if (to === from) return false;
+    p.name = t[to].name;
+    p.blocks.forEach((b, i) => { b.label = t[to].blocks[i]; });
+    return true;
+  }
+  // Re-localize every untouched sample program to the current language,
+  // called whenever the interface language changes.
+  function relocalizeSamples() {
+    let changed = false;
+    programs.forEach((p) => { if (relocalizeSample(p)) changed = true; });
+    if (changed) {
+      storeSave();
+      if (currentProgram && mode === "prog" && blocks.length === currentProgram.blocks.length) {
+        blocks.forEach((b, i) => { b.label = currentProgram.blocks[i].label; });
+      }
+    }
+    return changed;
   }
   // Keep only well-formed programs (also used for imported files)
   function cleanPrograms(list) {
@@ -921,7 +949,7 @@ window.GTimer = (function () {
     $("langIt").classList.toggle("act-blue", I18N.lang === "it");
     repaint();
   }
-  function setLang(l) { I18N.setLang(l); applyLang(); }
+  function setLang(l) { I18N.setLang(l); relocalizeSamples(); applyLang(); }
 
   /* ══════════ Events ══════════ */
   btnStart.addEventListener("click", start);
