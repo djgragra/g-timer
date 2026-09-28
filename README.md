@@ -20,7 +20,7 @@ G-Timer is a free tool from [OnAir Garage](https://onairgarage.com/tools/g-timer
 - **Final report**: planned vs. actual time for each block, with the final drift. You can copy it or export it as `.txt`.
 - **Your programs, your logo**: create, edit, duplicate, import and export programs as JSON, and upload your station logo (PNG, JPG or SVG).
 - **English and Italian**: the language follows the browser, and you can switch it from the header.
-- **Installable and offline-capable**: install it as an app from the browser (an “Install app” button appears when supported; on iPhone/iPad, use Share → Add to Home Screen). A service worker caches the whole app on first visit, so it keeps working in the control room without a network connection.
+- **Installable and offline-capable**: install it as an app from the browser (an “Install app” button appears when supported; on iPhone/iPad, use Share → Add to Home Screen). A service worker caches the whole app on first visit, so it keeps working in the control room without a network connection. When a new version is ready, a banner offers to reload; ignoring it just keeps the current version running.
 
 ### Keyboard shortcuts
 
@@ -105,7 +105,7 @@ icons/                app icons, including the maskable one for Android
 screenshots/          manifest screenshots (desktop and mobile)
 ```
 
-Bump `CACHE_VERSION` at the top of `sw.js` whenever you change any cached file, so returning visitors get the update instead of a stale offline copy.
+Bump `CACHE_VERSION` at the top of `sw.js` whenever you change any cached file, so returning visitors get the update instead of a stale offline copy. The new version installs in the background and the app shows an in-page banner offering to reload; it does not reload on its own, so an ongoing recording is never interrupted.
 
 ## Credits and license
 

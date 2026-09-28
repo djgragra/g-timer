@@ -4,7 +4,7 @@
 
    Bump CACHE_VERSION whenever any file below changes; the old cache is
    dropped on activate. */
-const CACHE_VERSION = "v2026.9.3";
+const CACHE_VERSION = "v2026.9.4";
 const CACHE_NAME = "g-timer-" + CACHE_VERSION;
 
 const PRECACHE_URLS = [
@@ -39,11 +39,11 @@ const PRECACHE_URLS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
-  );
+  // Does NOT call skipWaiting(): on an update, the new worker waits until
+  // the page asks it to take over (see the "message" listener below), so
+  // the app can show an "update available" banner first. On a first
+  // install there is no active worker to wait for, so this has no effect.
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS)));
 });
 
 self.addEventListener("activate", (event) => {
@@ -52,6 +52,11 @@ self.addEventListener("activate", (event) => {
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+// The page sends this once the user confirms the "update available" banner.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 // Cache-first: instant offline loads. Fetched files are also stored, so

@@ -4,7 +4,7 @@
 window.GTimer = (function () {
   "use strict";
 
-  const VERSION = "2026.9.3";
+  const VERSION = "2026.9.4";
   const I18N = window.GTimerI18n;
   const t = I18N.t;
 
@@ -1088,10 +1088,34 @@ window.GTimer = (function () {
   setButtons();
   updateInstallButton();
 
-  // Offline support: cache the app shell on first visit
+  // Offline support: cache the app shell on first visit, and offer a
+  // reload when a new version has finished installing in the background.
   if ("serviceWorker" in navigator) {
+    const updateBanner = $("updateBanner");
+    let reloadedForUpdate = false;
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js").catch(() => { /* offline support unavailable */ });
+      navigator.serviceWorker.register("sw.js").then((reg) => {
+        reg.addEventListener("updatefound", () => {
+          const installing = reg.installing;
+          if (!installing) return;
+          installing.addEventListener("statechange", () => {
+            // "installed" + an existing controller means this is an update,
+            // not the very first install (which has no page to notify yet).
+            if (installing.state === "installed" && navigator.serviceWorker.controller) {
+              updateBanner.classList.remove("hidden");
+            }
+          });
+        });
+        $("updateReload").addEventListener("click", () => {
+          if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        });
+        $("updateDismiss").addEventListener("click", () => updateBanner.classList.add("hidden"));
+      }).catch(() => { /* offline support unavailable */ });
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloadedForUpdate) return;
+        reloadedForUpdate = true;
+        location.reload();
+      });
     });
   }
 
