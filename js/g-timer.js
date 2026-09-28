@@ -4,7 +4,7 @@
 window.GTimer = (function () {
   "use strict";
 
-  const VERSION = "2026.9.2";
+  const VERSION = "2026.9.3";
   const I18N = window.GTimerI18n;
   const t = I18N.t;
 
@@ -951,6 +951,44 @@ window.GTimer = (function () {
   }
   function setLang(l) { I18N.setLang(l); relocalizeSamples(); applyLang(); }
 
+  /* ══════════ Install as an app (PWA) ══════════ */
+  const installOverlay = $("installOverlay");
+  const btnInstall = $("installBtn");
+  let deferredInstallPrompt = null;
+  function isStandalone() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+  // iPadOS Safari reports as "MacIntel" but, unlike a real Mac, has touch points
+  function isIOS() {
+    const ua = navigator.userAgent || "";
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+  function updateInstallButton() {
+    if (isStandalone()) { btnInstall.classList.add("hidden"); return; }
+    btnInstall.classList.toggle("hidden", !(deferredInstallPrompt || isIOS()));
+  }
+  function openInstallInfo() { installOverlay.classList.add("show"); }
+  function closeInstallInfo() { installOverlay.classList.remove("show"); }
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    updateInstallButton();
+  });
+  window.addEventListener("appinstalled", () => { deferredInstallPrompt = null; updateInstallButton(); });
+  btnInstall.addEventListener("click", async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      try { await deferredInstallPrompt.userChoice; } catch (e) { /* ignore */ }
+      deferredInstallPrompt = null;
+      updateInstallButton();
+    } else if (isIOS()) {
+      openInstallInfo();
+    }
+  });
+  try {
+    window.matchMedia("(display-mode: standalone)").addEventListener("change", updateInstallButton);
+  } catch (e) { /* older Safari lacks addEventListener on MediaQueryList */ }
+
   /* ══════════ Events ══════════ */
   btnStart.addEventListener("click", start);
   btnStop.addEventListener("click", pause);
@@ -976,9 +1014,11 @@ window.GTimer = (function () {
   $("restoreBtn").addEventListener("click", restoreBlocks);
 
   // Modals: close buttons and click on the backdrop
-  [[aboutOverlay, closeAbout], [logoOverlay, closeLogo], [manageOverlay, closeManage], [editorOverlay, closeEditor], [reportOverlay, closeReport]]
+  [[aboutOverlay, closeAbout], [logoOverlay, closeLogo], [installOverlay, closeInstallInfo], [manageOverlay, closeManage], [editorOverlay, closeEditor], [reportOverlay, closeReport]]
     .forEach(([ov, close]) => ov.addEventListener("click", (e) => { if (e.target === ov) close(); }));
   $("aboutClose").addEventListener("click", closeAbout);
+  $("installX").addEventListener("click", closeInstallInfo);
+  $("installClose").addEventListener("click", closeInstallInfo);
   $("logoX").addEventListener("click", closeLogo);
   $("logoUpload").addEventListener("click", () => $("logoFile").click());
   $("logoRemove").addEventListener("click", removeLogo);
@@ -1011,7 +1051,7 @@ window.GTimer = (function () {
   elSec.addEventListener("input", previewFree);
 
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") { closeAbout(); closeLogo(); closeManage(); closeEditor(); closeReport(); hidePreroll(); return; }
+    if (e.key === "Escape") { closeAbout(); closeLogo(); closeInstallInfo(); closeManage(); closeEditor(); closeReport(); hidePreroll(); return; }
     const tag = e.target.tagName;
     if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") {
       if (e.key === "Enter" && (e.target.id === "minutes" || e.target.id === "seconds")) { e.target.blur(); start(); }
@@ -1046,6 +1086,14 @@ window.GTimer = (function () {
   showLogo();
   applyLang();
   setButtons();
+  updateInstallButton();
+
+  // Offline support: cache the app shell on first visit
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => { /* offline support unavailable */ });
+    });
+  }
 
   return { version: VERSION };
 })();

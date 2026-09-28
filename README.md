@@ -20,7 +20,7 @@ G-Timer is a free tool from [OnAir Garage](https://onairgarage.com/tools/g-timer
 - **Final report**: planned vs. actual time for each block, with the final drift. You can copy it or export it as `.txt`.
 - **Your programs, your logo**: create, edit, duplicate, import and export programs as JSON, and upload your station logo (PNG, JPG or SVG).
 - **English and Italian**: the language follows the browser, and you can switch it from the header.
-- **Installable** as a web app (manifest included).
+- **Installable and offline-capable**: install it as an app from the browser (an “Install app” button appears when supported; on iPhone/iPad, use Share → Add to Home Screen). A service worker caches the whole app on first visit, so it keeps working in the control room without a network connection.
 
 ### Keyboard shortcuts
 
@@ -44,10 +44,12 @@ G-Timer is plain HTML, CSS and JavaScript. It has no build step and no dependenc
 ```
 index.html
 manifest.webmanifest
+sw.js
 css/
 js/
 fonts/
 icons/
+screenshots/
 ```
 
 To try it locally, serve the folder with any static server, for example:
@@ -93,13 +95,17 @@ Estimated minimum versions, based on the web features used (not tested on each o
 ```
 index.html            app page
 manifest.webmanifest  web app manifest (id: com.onairgarage.gtimer)
+sw.js                 service worker: caches the app for offline use
 css/g-timer.css       styles
 css/fonts.css         @font-face rules for the local fonts
 js/i18n.js            English and Italian strings
 js/g-timer.js         timer logic
 fonts/                Barlow Condensed, Rajdhani, Share Tech Mono (woff2) + OFL licenses
-icons/                app icons
+icons/                app icons, including the maskable one for Android
+screenshots/          manifest screenshots (desktop and mobile)
 ```
+
+Bump `CACHE_VERSION` at the top of `sw.js` whenever you change any cached file, so returning visitors get the update instead of a stale offline copy.
 
 ## Credits and license
 
@@ -119,6 +125,7 @@ Fonts: [Barlow Condensed](https://github.com/jpt/barlow), [Rajdhani](https://fon
 - Puoi registrare ogni blocco in più take e saltare da un blocco all'altro senza seguire l'ordine.
 - Alla fine ottieni un **report** da copiare o esportare in `.txt`.
 - Puoi caricare il logo della tua radio e importare o esportare i programmi in JSON.
+- Si installa come app e funziona anche offline: in regia continua a girare senza connessione.
 - Tutti i dati restano nel tuo browser: niente server, niente account, niente tracciamento.
 
 Per ospitarlo sul tuo server basta copiare i file statici elencati sopra in una cartella qualsiasi. Licenza MIT, © 2026 Graziano Melzi.

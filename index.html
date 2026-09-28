@@ -50,6 +50,7 @@
         <button class="tog-btn" id="langEn" type="button" data-lang="en">EN</button>
         <button class="tog-btn" id="langIt" type="button" data-lang="it">IT</button>
       </div>
+      <button class="hbtn hidden" id="installBtn" type="button" data-i18n-title="pwa.install" title="Install app">⤓</button>
       <button class="hbtn" id="logoBtn" type="button" data-i18n-title="hdr.logo" title="Station logo">🖼</button>
       <button class="hbtn" id="infoBtn" type="button" data-i18n-title="hdr.info" title="About">ℹ</button>
       <button class="hbtn" id="fsBtn" type="button" data-i18n-title="hdr.fs" title="Fullscreen (F)">⛶</button>
@@ -185,6 +186,23 @@
         <button class="mbtn danger" id="logoRemove" type="button" data-i18n="logo.remove">Remove</button>
         <div class="mf-sp"></div>
         <button class="mbtn primary" id="logoUpload" type="button" data-i18n="logo.upload">⤓ Upload logo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTALL MODAL (iOS/iPadOS: no beforeinstallprompt, show manual steps) -->
+  <div class="modal-overlay" id="installOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <span class="modal-title" data-i18n="pwa.iosTitle">Install G-Timer</span>
+        <button class="modal-x" id="installX" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <p data-i18n="pwa.iosBody">Tap the Share icon in Safari, then choose “Add to Home Screen”.</p>
+      </div>
+      <div class="modal-foot">
+        <div class="mf-sp"></div>
+        <button class="mbtn primary" id="installClose" type="button" data-i18n="btn.close">Close</button>
       </div>
     </div>
   </div>
