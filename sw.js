@@ -4,7 +4,7 @@
 
    Bump CACHE_VERSION whenever any file below changes; the old cache is
    dropped on activate. */
-const CACHE_VERSION = "v2026.9.4";
+const CACHE_VERSION = "v2026.9.5";
 const CACHE_NAME = "g-timer-" + CACHE_VERSION;
 
 const PRECACHE_URLS = [

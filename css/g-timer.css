@@ -296,7 +296,11 @@ body.paused .pause-edit { display: flex; }
   .blocks-panel { border-left: none; border-top: 1px solid var(--bdr2); max-height: 38vh; }
 }
 @media (max-width: 640px) {
-  header { gap: 6px; padding: 0 8px; flex-wrap: nowrap; overflow-x: auto; }
+  /* two rows: every control (language, install, logo, about) stays reachable on a phone */
+  .root { grid-template-rows: auto 1fr; }
+  header { gap: 6px 8px; padding: 6px 8px; flex-wrap: wrap; overflow: visible; }
+  header .hd { display: none; }
+  .hsp { flex: 1 1 8px; }
   .h-date { display: none; }
   .h-time { font-size: 20px; }
   .prog-select { max-width: 120px; font-size: 11px; }

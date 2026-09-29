@@ -4,7 +4,7 @@
 window.GTimer = (function () {
   "use strict";
 
-  const VERSION = "2026.9.4";
+  const VERSION = "2026.9.5";
   const I18N = window.GTimerI18n;
   const t = I18N.t;
 
@@ -508,15 +508,18 @@ window.GTimer = (function () {
   const SAMPLE_I18N = {
     "sample-show": {
       en: { name: "Sample · One-hour show", blocks: ["Opening", "Segment 1", "Segment 2", "Interview", "Segment 3", "Closing"] },
-      it: { name: "Esempio · Show di un'ora", blocks: ["Apertura", "Segmento 1", "Segmento 2", "Intervista", "Segmento 3", "Chiusura"] }
+      it: { name: "Esempio · Show di un'ora", blocks: ["Apertura", "Segmento 1", "Segmento 2", "Intervista", "Segmento 3", "Chiusura"] },
+      es: { name: "Ejemplo · Programa de una hora", blocks: ["Apertura", "Sección 1", "Sección 2", "Entrevista", "Sección 3", "Cierre"] }
     },
     "sample-podcast": {
       en: { name: "Sample · Podcast episode", blocks: ["Cold open", "Intro & theme", "Main topic", "Listener questions", "Outro"] },
-      it: { name: "Esempio · Puntata podcast", blocks: ["Cold open", "Sigla e presentazione", "Tema principale", "Domande degli ascoltatori", "Saluti"] }
+      it: { name: "Esempio · Puntata podcast", blocks: ["Cold open", "Sigla e presentazione", "Tema principale", "Domande degli ascoltatori", "Saluti"] },
+      es: { name: "Ejemplo · Episodio de pódcast", blocks: ["Avance", "Cabecera y presentación", "Tema principal", "Preguntas de los oyentes", "Despedida"] }
     },
     "sample-news": {
       en: { name: "Sample · 5' news bulletin", blocks: ["Headlines", "Stories", "Weather", "Close"] },
-      it: { name: "Esempio · Notiziario 5'", blocks: ["Titoli", "Notizie", "Meteo", "Chiusura"] }
+      it: { name: "Esempio · Notiziario 5'", blocks: ["Titoli", "Notizie", "Meteo", "Chiusura"] },
+      es: { name: "Ejemplo · Boletín de noticias de 5'", blocks: ["Titulares", "Noticias", "El tiempo", "Cierre"] }
     }
   };
   const SAMPLE_DURATIONS = {
@@ -525,7 +528,7 @@ window.GTimer = (function () {
     "sample-news": [30, 210, 40, 20]
   };
   function samplePrograms() {
-    const lang = I18N.lang === "it" ? "it" : "en";
+    const lang = I18N.lang === "it" || I18N.lang === "es" ? I18N.lang : "en";
     return Object.keys(SAMPLE_I18N).map((id) => {
       const t = SAMPLE_I18N[id][lang], durations = SAMPLE_DURATIONS[id];
       return { id, name: t.name, blocks: t.blocks.map((label, i) => ({ label, sec: durations[i] })), updated: Date.now() };
@@ -537,9 +540,9 @@ window.GTimer = (function () {
   function relocalizeSample(p) {
     const t = SAMPLE_I18N[p.id];
     if (!t) return false;
-    const from = ["en", "it"].find((l) => t[l].name === p.name && p.blocks.length === t[l].blocks.length && p.blocks.every((b, i) => b.label === t[l].blocks[i]));
+    const from = ["en", "it", "es"].find((l) => t[l].name === p.name && p.blocks.length === t[l].blocks.length && p.blocks.every((b, i) => b.label === t[l].blocks[i]));
     if (!from) return false;
-    const to = I18N.lang === "it" ? "it" : "en";
+    const to = I18N.lang === "it" || I18N.lang === "es" ? I18N.lang : "en";
     if (to === from) return false;
     p.name = t[to].name;
     p.blocks.forEach((b, i) => { b.label = t[to].blocks[i]; });
@@ -947,6 +950,7 @@ window.GTimer = (function () {
     I18N.apply();
     $("langEn").classList.toggle("act-blue", I18N.lang === "en");
     $("langIt").classList.toggle("act-blue", I18N.lang === "it");
+    $("langEs").classList.toggle("act-blue", I18N.lang === "es");
     repaint();
   }
   function setLang(l) { I18N.setLang(l); relocalizeSamples(); applyLang(); }
@@ -1011,6 +1015,7 @@ window.GTimer = (function () {
   $("fsBtn").addEventListener("click", toggleFS);
   $("langEn").addEventListener("click", () => setLang("en"));
   $("langIt").addEventListener("click", () => setLang("it"));
+  $("langEs").addEventListener("click", () => setLang("es"));
   $("restoreBtn").addEventListener("click", restoreBlocks);
 
   // Modals: close buttons and click on the backdrop

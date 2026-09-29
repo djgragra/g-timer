@@ -19,8 +19,16 @@ G-Timer is a free tool from [OnAir Garage](https://onairgarage.com/tools/g-timer
 - **Pause and adjust**: while paused you can correct the remaining time (±10 s, ±60 s or type a value).
 - **Final report**: planned vs. actual time for each block, with the final drift. You can copy it or export it as `.txt`.
 - **Your programs, your logo**: create, edit, duplicate, import and export programs as JSON, and upload your station logo (PNG, JPG or SVG).
-- **English and Italian**: the language follows the browser, and you can switch it from the header.
+- **English, Italian and Spanish**: the app always opens in English; switch the language from the header and your choice is remembered on the device.
 - **Installable and offline-capable**: install it as an app from the browser (an “Install app” button appears when supported; on iPhone/iPad, use Share → Add to Home Screen). A service worker caches the whole app on first visit, so it keeps working in the control room without a network connection. When a new version is ready, a banner offers to reload; ignoring it just keeps the current version running.
+
+### Timing, sources and validation
+
+G-Timer contains no external technical values (no standards or reference tables), so there are no sources to cite.
+
+- **How time is measured**: the elapsed time is the difference between the current wall-clock time (`Date.now()`) and the moment the take started, read on every animation frame, so it does not accumulate drift from timers running late. Pauses store the elapsed time and resume from it.
+- **Limits**: because it uses the system clock, a manual change of the clock or a network time correction while a take is running would shift the reading. The display resolution is one second. The timing has not been compared with a reference clock.
+- **Keep the tab visible and the computer awake** during a recording: browsers may slow animation frames in hidden tabs (the elapsed time is still computed from the clock when the tab comes back).
 
 ### Keyboard shortcuts
 
@@ -60,6 +68,8 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000/>.
 
+Tests: none (the timer has no calculation tables); the app is checked in the browser at 375 px, 768 px and desktop widths.
+
 The page has no inline scripts or styles, so it works with a strict Content Security Policy. A `<meta>` CSP is included. If you control the server, you can also send it as an HTTP header:
 
 ```
@@ -98,7 +108,7 @@ manifest.webmanifest  web app manifest (id: com.onairgarage.gtimer)
 sw.js                 service worker: caches the app for offline use
 css/g-timer.css       styles
 css/fonts.css         @font-face rules for the local fonts
-js/i18n.js            English and Italian strings
+js/i18n.js            English, Italian and Spanish strings
 js/g-timer.js         timer logic
 fonts/                Barlow Condensed, Rajdhani, Share Tech Mono (woff2) + OFL licenses
 icons/                app icons, including the maskable one for Android
@@ -113,19 +123,3 @@ Bump `CACHE_VERSION` at the top of `sw.js` whenever you change any cached file, 
 Contact: [hello@onairgarage.com](mailto:hello@onairgarage.com) · <https://onairgarage.com>
 
 Fonts: [Barlow Condensed](https://github.com/jpt/barlow), [Rajdhani](https://fonts.google.com/specimen/Rajdhani) (Indian Type Foundry) and [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) (Carrois Type Design). All three are licensed under the SIL Open Font License 1.1; the license files are in [`fonts/`](fonts/).
-
----
-
-## In italiano
-
-**G-Timer** è un timer di regia per registrazioni radiofoniche a blocchi. Lo pubblica gratuitamente [OnAir Garage](https://onairgarage.com/tools/g-timer/).
-
-- Crei programmi divisi in blocchi, ciascuno con la sua durata. Registri con pre-roll 3·2·1 e vedi subito gli sforamenti.
-- Il **conteggio dinamico (DIN)** riporta lo scarto di ogni blocco sui blocchi successivi.
-- Puoi registrare ogni blocco in più take e saltare da un blocco all'altro senza seguire l'ordine.
-- Alla fine ottieni un **report** da copiare o esportare in `.txt`.
-- Puoi caricare il logo della tua radio e importare o esportare i programmi in JSON.
-- Si installa come app e funziona anche offline: in regia continua a girare senza connessione.
-- Tutti i dati restano nel tuo browser: niente server, niente account, niente tracciamento.
-
-Per ospitarlo sul tuo server basta copiare i file statici elencati sopra in una cartella qualsiasi. Licenza MIT, © 2026 Graziano Melzi.

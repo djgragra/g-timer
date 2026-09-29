@@ -217,19 +217,121 @@ window.GTimerI18n = (function () {
       "prog.file": "g-timer-programmi",
       "days": ["DOM", "LUN", "MAR", "MER", "GIO", "VEN", "SAB"],
       "months": ["GEN", "FEB", "MAR", "APR", "MAG", "GIU", "LUG", "AGO", "SET", "OTT", "NOV", "DIC"]
+    },
+    es: {
+      "mode.free": "Libre",
+      "mode.prog": "Programa",
+      "hdr.manage": "Gestionar programas",
+      "hdr.logo": "Logo de la emisora",
+      "hdr.info": "Acerca de",
+      "hdr.fs": "Pantalla completa (F)",
+      "in.min": "MIN",
+      "in.sec": "SEG",
+      "in.minutes": "Minutos",
+      "in.seconds": "Segundos",
+      "pause.edit": "En pausa — ajusta el tiempo restante",
+      "btn.start": "▶ Iniciar",
+      "btn.pause": "⏸ Pausa",
+      "btn.next": "⏭ Fin de bloque",
+      "btn.redo": "↻ Repetir",
+      "btn.back": "◀ Atrás",
+      "btn.reset": "↺ Reiniciar",
+      "btn.close": "Cerrar",
+      "btn.cancel": "Cancelar",
+      "opt.sound": "Sonido (S)",
+      "opt.preroll": "Pre-roll 3·2·1",
+      "opt.dyn": "DIN",
+      "opt.dynTitle": "Cronometraje dinámico (recalcular bloques)",
+      "opt.report": "📋 Informe",
+      "opt.reportTitle": "Reabrir el último informe",
+      "hint": "ESPACIO iniciar/pausa · N fin de bloque · R reiniciar · F pantalla completa",
+      "bp.title": "Bloques",
+      "bp.restore": "↺ Restaurar",
+      "bp.restoreTitle": "Restaurar las duraciones guardadas",
+      "about.desc": "Temporizador de estudio para grabaciones de radio por bloques: programas guardados, duración por bloque, pre-roll y control de excesos.",
+      "about.dev": "Desarrollado por",
+      "about.web": "Sitio web",
+      "about.license": "Licencia",
+      "about.privacy": "Privacidad",
+      "about.privacyText": "Todos los datos permanecen en tu navegador",
+      "about.version": "Versión",
+      "pwa.install": "⤓ Instalar app",
+      "pwa.iosTitle": "Instalar G-Timer",
+      "pwa.iosBody": "Toca el icono Compartir en Safari y elige «Añadir a pantalla de inicio».",
+      "pwa.updateAvailable": "Hay una nueva versión de G-Timer lista.",
+      "pwa.updateReload": "⟳ Recargar",
+      "logo.title": "Logo de la emisora",
+      "logo.note": "Sube el logo de tu emisora (PNG, JPG o SVG). Se reduce a un máximo de 512 px y se guarda solo en este navegador.",
+      "logo.none": "Sin logo",
+      "logo.remove": "Quitar",
+      "logo.upload": "⤓ Subir logo",
+      "logo.errType": "Archivo no admitido: usa PNG, JPG o SVG.",
+      "logo.errRead": "No se pudo leer la imagen.",
+      "logo.errSave": "No se pudo guardar el logo (almacenamiento del navegador lleno o desactivado).",
+      "manage.title": "Gestionar programas",
+      "manage.import": "⤓ Importar",
+      "manage.export": "⤒ Exportar",
+      "manage.new": "+ Nuevo",
+      "manage.empty": "No hay programas guardados.<br>Pulsa «+ Nuevo» para crear uno.",
+      "manage.load": "Cargar",
+      "manage.edit": "Editar",
+      "manage.dup": "Duplicar",
+      "manage.del": "Eliminar",
+      "manage.blocks": "{n} bloques",
+      "manage.copy": "(copia)",
+      "manage.confirmDel": "¿Eliminar el programa «{name}»?",
+      "manage.badFile": "Archivo no válido.",
+      "manage.none": "— sin programas —",
+      "ed.new": "Nuevo programa",
+      "ed.edit": "Editar programa",
+      "ed.name": "Nombre del programa",
+      "ed.namePh": "p. ej. Programa de la mañana",
+      "ed.add": "+ Añadir bloque",
+      "ed.delete": "Eliminar",
+      "ed.save": "💾 Guardar",
+      "ed.remove": "Quitar",
+      "block": "Bloque",
+      "block.pos": "Bloque {i} / {n}",
+      "total": "Total",
+      "recorded": "Grabado",
+      "elapsed": "Transcurrido {e} / Objetivo {t}",
+      "st.ready": "LISTO",
+      "st.noProg": "SIN PROGRAMA",
+      "st.over": "EXCESO",
+      "st.closing": "CIERRE",
+      "st.warn": "AVISO",
+      "st.rec": "REC",
+      "st.pause": "PAUSA",
+      "st.end": "FIN",
+      "st.endProg": "FIN DEL PROGRAMA",
+      "br.rec": "grab",
+      "br.rem": "resta",
+      "br.recalc": "objetivo recalculado",
+      "rep.title": "Informe de grabación",
+      "rep.copied": "Informe copiado ✓",
+      "rep.copy": "⧉ Copiar",
+      "rep.export": "⤒ Exportar .txt",
+      "rep.recording": "Grabación",
+      "rep.planned": "Previsto",
+      "rep.actual": "Real",
+      "rep.diff": "Dif.",
+      "rep.totPlanned": "Total previsto",
+      "rep.totActual": "Total grabado",
+      "rep.drift": "Desvío final",
+      "rep.header": "INFORME DE GRABACIÓN",
+      "rep.file": "informe",
+      "prog.file": "g-timer-programas",
+      "days": ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"],
+      "months": ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"]
     }
   };
 
+  // Always opens in English; only a choice made by hand is remembered.
   function detect() {
     try {
       const saved = localStorage.getItem(LKEY);
       if (saved && DICT[saved]) return saved;
     } catch (e) { /* storage unavailable */ }
-    const langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"];
-    for (const l of langs) {
-      const code = String(l).slice(0, 2).toLowerCase();
-      if (DICT[code]) return code;
-    }
     return "en";
   }
 
@@ -259,5 +361,5 @@ window.GTimerI18n = (function () {
     apply();
   }
 
-  return { t, apply, setLang, get lang() { return lang; }, locale: () => (lang === "it" ? "it-IT" : "en-GB") };
+  return { t, apply, setLang, get lang() { return lang; }, locale: () => ({ it: "it-IT", es: "es-ES" }[lang] || "en-GB") };
 })();
