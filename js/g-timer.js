@@ -42,7 +42,11 @@ window.GTimer = (function () {
   let idx = 0;
   let actuals = [];           // recorded takes per block: actuals[i] = [sec, sec, ...]
   let targetSec = 0;
-  let startEpoch = 0;
+  // Elapsed time is measured with a monotonic clock, so a change of the system clock (manual, or a network
+  // time correction) while a take is running cannot shift the reading. Wall-clock time is only used for
+  // dates (programs, report header).
+  const mono = () => (window.performance && performance.now ? performance.now() : Date.now());
+  let startEpoch = 0;          // monotonic mark (ms) of the start, shifted by the time already elapsed on resume
   let pausedElapsed = 0;      // seconds frozen while paused (>0 = can resume)
   let running = false;
   let finished = false;
@@ -203,8 +207,8 @@ window.GTimer = (function () {
 
   function beginRun(fresh) {
     document.body.classList.remove("paused");
-    if (fresh) { pausedElapsed = 0; startEpoch = Date.now(); }
-    else { startEpoch = Date.now() - pausedElapsed * 1000; pausedElapsed = 0; }
+    if (fresh) { pausedElapsed = 0; startEpoch = mono(); }
+    else { startEpoch = mono() - pausedElapsed * 1000; pausedElapsed = 0; }
     running = true;
     if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
     setButtons();
@@ -214,7 +218,7 @@ window.GTimer = (function () {
   }
 
   function tick() {
-    const elapsed = (Date.now() - startEpoch) / 1000;
+    const elapsed = (mono() - startEpoch) / 1000;
     const remaining = targetSec - elapsed;
     paint(remaining, elapsed);
     updateNextProj(remaining);
@@ -233,7 +237,7 @@ window.GTimer = (function () {
 
   function pause() {
     if (!running) return;
-    pausedElapsed = (Date.now() - startEpoch) / 1000;
+    pausedElapsed = (mono() - startEpoch) / 1000;
     running = false;
     cancelAnimationFrame(rafId);
     document.body.classList.add("paused");
@@ -268,7 +272,7 @@ window.GTimer = (function () {
   function next() {
     if (mode !== "prog" || !blocks.length || finished) return;
     // store the actual duration of the current block
-    const el = running ? (Date.now() - startEpoch) / 1000 : pausedElapsed;
+    const el = running ? (mono() - startEpoch) / 1000 : pausedElapsed;
     if (el > 0) { if (!Array.isArray(actuals[idx])) actuals[idx] = []; actuals[idx].push(Math.round(el)); }
     jumped = false;
     running = false; pausedElapsed = 0; cancelAnimationFrame(rafId);

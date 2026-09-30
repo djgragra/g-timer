@@ -26,8 +26,8 @@ G-Timer is a free tool from [OnAir Garage](https://onairgarage.com/tools/g-timer
 
 G-Timer contains no external technical values (no standards or reference tables), so there are no sources to cite.
 
-- **How time is measured**: the elapsed time is the difference between the current wall-clock time (`Date.now()`) and the moment the take started, read on every animation frame, so it does not accumulate drift from timers running late. Pauses store the elapsed time and resume from it.
-- **Limits**: because it uses the system clock, a manual change of the clock or a network time correction while a take is running would shift the reading. The display resolution is one second. The timing has not been compared with a reference clock.
+- **How time is measured**: the elapsed time is the difference between a monotonic clock (`performance.now()`) now and at the moment the take started, read on every animation frame, so it does not accumulate drift from timers running late and is not affected by a change of the system clock (manual, or a network time correction) during a take. Pauses store the elapsed time and resume from it. Wall-clock time is used only for dates (programs, report header).
+- **Limits**: the display resolution is one second. The timing has not been compared with a reference clock. Some browsers do not count the time a computer spends asleep in the monotonic clock.
 - **Keep the tab visible and the computer awake** during a recording: browsers may slow animation frames in hidden tabs (the elapsed time is still computed from the clock when the tab comes back).
 
 ### Keyboard shortcuts
