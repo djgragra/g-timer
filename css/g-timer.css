@@ -329,6 +329,21 @@ body.paused .pause-edit { display: flex; }
 .fld-in.err { border-color: var(--red); }
 .offscreen { position: fixed; top: 0; left: -9999px; opacity: 0; }
 
+/* ══ Tip card (About): the OnAir Garage jar, one line and a cherry pill ══ */
+.tip-card { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding: 10px 14px; background: var(--bg3); border: 1px solid var(--bdr2); }
+.tip-art-link { flex: none; display: block; line-height: 0; }
+.tip-jar { display: block; width: 80px; height: auto; transition: transform 0.15s ease; }
+.tip-art-link:hover .tip-jar { transform: rotate(-4deg) scale(1.06); }
+.tip-body { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
+.tip-body p { font-family: var(--fr); font-size: 13px; line-height: 1.4; color: var(--text2); margin: 0; }
+.tip-btn { display: inline-flex; align-items: center; padding: 5px 14px; border: 2px solid #fbf4e4; border-radius: 99px; background: #c8232c; color: #fbf4e4; font-family: var(--fc); font-size: 12px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase; text-decoration: none; transition: background 0.2s; }
+.tip-btn:hover { background: #de2d37; }
+.tip-btn:focus-visible { outline: 2px solid var(--blue2); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .tip-jar { transition: none; } .tip-art-link:hover .tip-jar { transform: none; } }
+/* a short window (a phone on its side): the About window scrolls instead of being cut */
+.about-overlay { overflow-y: auto; }
+.about-overlay.show { align-items: safe center; }
+
 /* ══ Update banner (new service worker installed) ══ */
 .update-banner {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 400;
@@ -340,3 +355,19 @@ body.paused .pause-edit { display: flex; }
 .update-banner .mbtn { padding: 7px 16px; }
 .update-dismiss { width: 26px; height: 26px; flex-shrink: 0; border: 1px solid var(--bdr2); background: transparent; color: var(--text2); cursor: pointer; font-size: 12px; transition: all 0.2s; }
 .update-dismiss:hover { background: var(--bdr2); color: #fff; }
+
+/* ══ Touch screens: every control is at least 44 × 44 px (apps/WEB-APPS.md) ══
+   Only for a coarse pointer, so mouse-and-keyboard layouts do not change. */
+@media (pointer: coarse) {
+  .tog-btn { min-width: 44px; min-height: 44px; padding-top: 0; padding-bottom: 0; }
+  .hbtn, .modal-x, .update-dismiss { width: 44px; height: 44px; flex-shrink: 0; }
+  .prog-select { min-height: 44px; }
+  .chip { min-height: 44px; }
+  .rec-btn, .opt, .mbtn, .about-close, .bp-restore { min-height: 44px; }
+  .opt { min-width: 44px; }
+  .pe-btn { min-width: 44px; min-height: 44px; }
+  .pe-in, .rec-input, .fld-in, .er-label, .er-dur, .br-dur { min-height: 44px; }
+  .pi-btn, .er-del { min-width: 44px; min-height: 44px; }
+  .about-row a { display: inline-flex; align-items: center; min-height: 44px; }
+  .tip-btn { min-height: 44px; }
+}

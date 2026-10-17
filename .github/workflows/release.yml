@@ -1,0 +1,75 @@
+name: Release
+
+# Start from the Actions tab (or from a chat) with a version: it runs on main, checks the version,
+# runs the tests, then GitHub creates the tag on the tip of main and publishes the release.
+# The app is the files themselves (no build step), so there is nothing to attach.
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Version to release: the one in js/g-timer.js (for example 2026.10.1)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # all tags, to compare with the latest one
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: The version is the one in the code, new, and higher than the latest tag
+        id: check
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+        run: |
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "::error::A release must run on main (this run is on $GITHUB_REF_NAME)"; exit 1
+          fi
+          VERSION="${RELEASE_VERSION#v}"
+          if ! echo "$VERSION" | grep -Eq '^20[0-9]{2}\.([1-9]|1[0-2])\.[0-9]+$'; then
+            echo "::error::'$RELEASE_VERSION' is not a version like 2026.10.1"; exit 1
+          fi
+          CODE=$(node -e 'console.log(/const VERSION = "([^"]+)"/.exec(require("fs").readFileSync("js/g-timer.js", "utf8"))[1])')
+          if [ "$VERSION" != "$CODE" ]; then
+            echo "::error::Version $VERSION does not match VERSION in js/g-timer.js ($CODE)"; exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "::error::Tag v$VERSION already exists: use a higher version"; exit 1
+          fi
+          LATEST=$(git tag --list 'v20*' | sed 's/^v//' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
+          echo "code: $CODE  latest tag: ${LATEST:-none}"
+          if [ -n "$LATEST" ]; then
+            node -e '
+              const p = (v) => v.split(".").map((n) => parseInt(n, 10) || 0);
+              const [a, b] = [p(process.argv[1]), p(process.argv[2])];
+              for (let i = 0; i < Math.max(a.length, b.length); i++) {
+                const d = (a[i] || 0) - (b[i] || 0);
+                if (d) process.exit(d > 0 ? 0 : 1);
+              }
+              process.exit(1);
+            ' "$VERSION" "$LATEST" || { echo "::error::Version $VERSION must be higher than the latest tag $LATEST"; exit 1; }
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - run: node --test dev/*.test.js
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ steps.check.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: G-Timer ${{ steps.check.outputs.version }}
+          generate_release_notes: true
+          body: |
+            G-Timer ${{ steps.check.outputs.version }}, a free tool from OnAir Garage.
+
+            - Use it online: https://onairgarage.com/apps/g-timer/
+            - Tool page: https://onairgarage.com/tools/g-timer/
