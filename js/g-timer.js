@@ -4,7 +4,7 @@
 window.GTimer = (function () {
   "use strict";
 
-  const VERSION = "2026.9.5";
+  const VERSION = "2026.10.1";
   const I18N = window.GTimerI18n;
   const t = I18N.t;
 
@@ -955,6 +955,8 @@ window.GTimer = (function () {
     $("langEn").classList.toggle("act-blue", I18N.lang === "en");
     $("langIt").classList.toggle("act-blue", I18N.lang === "it");
     $("langEs").classList.toggle("act-blue", I18N.lang === "es");
+    // the tip card opens the support page of the site in the interface language
+    $("tipBtn").href = $("tipJarLink").href = t("tip.url");
     repaint();
   }
   function setLang(l) { I18N.setLang(l); relocalizeSamples(); applyLang(); }

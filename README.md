@@ -20,15 +20,52 @@ G-Timer is a free tool from [OnAir Garage](https://onairgarage.com/tools/g-timer
 - **Final report**: planned vs. actual time for each block, with the final drift. You can copy it or export it as `.txt`.
 - **Your programs, your logo**: create, edit, duplicate, import and export programs as JSON, and upload your station logo (PNG, JPG or SVG).
 - **English, Italian and Spanish**: the app always opens in English; switch the language from the header and your choice is remembered on the device.
+- **A small tip card** in the About window (the OnAir Garage tip jar, one line and a button that opens the tip page of the site in your language in a new tab). It is the only place; there are no pop-ups, reminders or counters.
 - **Installable and offline-capable**: install it as an app from the browser (an “Install app” button appears when supported; on iPhone/iPad, use Share → Add to Home Screen). A service worker caches the whole app on first visit, so it keeps working in the control room without a network connection. When a new version is ready, a banner offers to reload; ignoring it just keeps the current version running.
 
-### Timing, sources and validation
+### Formulas and sources
 
-G-Timer contains no external technical values (no standards or reference tables), so there are no sources to cite.
+G-Timer contains no external technical values (no standards, no reference tables), so there are no outside sources to cite. Every rule below is the app's own; the column "Status" says what backs it.
 
-- **How time is measured**: the elapsed time is the difference between a monotonic clock (`performance.now()`) now and at the moment the take started, read on every animation frame, so it does not accumulate drift from timers running late and is not affected by a change of the system clock (manual, or a network time correction) during a take. Pauses store the elapsed time and resume from it. Wall-clock time is used only for dates (programs, report header).
-- **Limits**: the display resolution is one second. The timing has not been compared with a reference clock. Some browsers do not count the time a computer spends asleep in the monotonic clock.
+| Value or rule | Source | Status |
+|---|---|---|
+| Elapsed time = `performance.now()` now minus `performance.now()` at the start of the take, read on every animation frame | own design (a monotonic clock does not follow changes of the system clock) | observed (browser checks); the clock itself is not compared with a reference |
+| Pauses store the elapsed time and resume from it | own design | covered by browser checks, not by the unit tests |
+| Remaining time ≤ 60 s turns the display yellow, ≤ 10 s red, below zero it blinks red and counts the overrun | own design (`paint()` in `js/g-timer.js`) | observed (browser checks) |
+| Pre-roll 3·2·1: three one-second steps, then the take starts | own design | observed (browser checks) |
+| Time typed as `mm:ss`; a bare number is minutes; seconds are capped at 59; a minus sign gives a negative correction | own rule | tested (`dev/gtimer.test.js`) |
+| Dynamic timing (DYN): target of block *i* = planned time − Σ (actual − planned) of the blocks before it | own rule | tested (`dev/gtimer.test.js`) |
+| Several takes of one block add up | own rule | tested (`dev/gtimer.test.js`) |
+| Report: difference = actual − planned; final drift = Σ (actual − planned) over all blocks | own rule | observed (browser checks) |
+| Program files: only programs with an id, a name and at least one block longer than 0 s are kept; names cut at 60 and labels at 80 characters; seconds rounded | own rule | tested (`dev/gtimer.test.js`) |
+
+- **Limits**: the display resolution is one second. Some browsers do not count the time a computer spends asleep in the monotonic clock.
 - **Keep the tab visible and the computer awake** during a recording: browsers may slow animation frames in hidden tabs (the elapsed time is still computed from the clock when the tab comes back).
+- Wall-clock time is used only for dates (programs, report header).
+
+### Validation and references
+
+| Reference | What it validates | Result | How to re-run |
+|---|---|---|---|
+| `dev/gtimer.test.js` | time parsing and formatting, dynamic timing, takes, program-file cleaning, escaping of labels (the shipped functions are cut out of `js/g-timer.js` and run as they are) | 9 tests pass | `node --test dev/*.test.js` |
+| `dev/i18n.test.js` | the three languages have the same keys, the same placeholders and no empty string; every key used by the page and by the code exists; the app opens in English whatever the browser language; only a chosen language is remembered | 7 tests pass | `node --test dev/*.test.js` |
+| `dev/tip.test.js` | the tip card: texts in the three languages, link to the site's support page per language, new tab, the jar is a second link out of keyboard order, image cached offline | 5 tests pass | `node --test dev/*.test.js` |
+| `dev/release.test.js` | version and cache name agree, every cached and linked file exists, manifest screenshots have the declared size, strict CSP without inline code, the service worker never skips waiting by itself | 8 tests pass | `node --test dev/*.test.js` |
+| Browser check, 2026.10.1 (Chromium under Playwright, 375, 360 and 667×375 px, touch emulation) | every control is at least 44 × 44 px on a touch screen, no horizontal scroll, no console error, opens in English with the browser in Italian, works offline, desktop layout identical to the previous version | passed | not part of the repository |
+
+### Not validated
+
+- The accuracy of the timing against a reference clock, and long recordings (hours).
+- Behaviour after the computer sleeps, in a hidden tab, or in a browser that throttles animation frames.
+- Touch targets and layout on real phones and tablets (Safari on iOS, Chrome on Android): measured only in emulation.
+- Safari and Firefox rendering of the new tip card and of the touch sizes; screen-reader reading of the About window.
+- The beeps on every browser and under every autoplay policy.
+- The update banner and the offline update on real devices.
+- The minimum browser versions below are estimated from the web features used.
+
+### Sources to re-check
+
+None: the app has no external technical values. Re-check the estimated minimum browser versions when a web feature is added.
 
 ### Keyboard shortcuts
 
@@ -57,6 +94,7 @@ css/
 js/
 fonts/
 icons/
+img/
 screenshots/
 ```
 
@@ -68,7 +106,7 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000/>.
 
-Tests: none (the timer has no calculation tables); the app is checked in the browser at 375 px, 768 px and desktop widths.
+Tests: `node --test dev/*.test.js` (no install step, Node 22; they run on every pull request and every push to `main`). The app is also checked by hand in the browser at 375 px, 768 px and desktop widths.
 
 The page has no inline scripts or styles, so it works with a strict Content Security Policy. A `<meta>` CSP is included. If you control the server, you can also send it as an HTTP header:
 
@@ -112,10 +150,17 @@ js/i18n.js            English, Italian and Spanish strings
 js/g-timer.js         timer logic
 fonts/                Barlow Condensed, Rajdhani, Share Tech Mono (woff2) + OFL licenses
 icons/                app icons, including the maskable one for Android
+img/                  the tip jar picture of the About window
 screenshots/          manifest screenshots (desktop and mobile)
+dev/                  tests (`node --test dev/*.test.js`); not part of the app that is published
+.github/workflows/    ci.yml (tests on every pull request) and release.yml (tag and release by hand, see below)
 ```
 
-Bump `CACHE_VERSION` at the top of `sw.js` whenever you change any cached file, so returning visitors get the update instead of a stale offline copy. The new version installs in the background and the app shows an in-page banner offering to reload; it does not reload on its own, so an ongoing recording is never interrupted.
+Keep `VERSION` in `js/g-timer.js` and `CACHE_VERSION` in `sw.js` on the same number (a test checks it), and bump both whenever you change any cached file, so returning visitors get the update instead of a stale offline copy. The new version installs in the background and the app shows an in-page banner offering to reload; it does not reload on its own, so an ongoing recording is never interrupted.
+
+## Releasing
+
+Versions are `YYYY.M.N` (for example `2026.10.1`); the tag is `v` plus the version. On the Actions tab, run **Release** on `main` with the version: it checks that the version is the one in `js/g-timer.js`, that it is higher than the latest tag and that the tag does not exist yet, runs the tests, and then creates the tag and the release. Nothing is built: the app is the files themselves.
 
 ## Credits and license
 

@@ -4,7 +4,7 @@
 
    Bump CACHE_VERSION whenever any file below changes; the old cache is
    dropped on activate. */
-const CACHE_VERSION = "v2026.9.5";
+const CACHE_VERSION = "v2026.10.1";
 const CACHE_NAME = "g-timer-" + CACHE_VERSION;
 
 const PRECACHE_URLS = [
@@ -19,6 +19,7 @@ const PRECACHE_URLS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
+  "./img/tip-jar-sm.webp",
   "./fonts/barlow-condensed-300-latin.woff2",
   "./fonts/barlow-condensed-300-latin-ext.woff2",
   "./fonts/barlow-condensed-400-latin.woff2",
