@@ -6,6 +6,7 @@ G-Timer is a free tool from [OnAir Garage](https://onairgarage.com/tools/g-timer
 
 - **Use it online:** <https://onairgarage.com/apps/g-timer/>
 - **Tool page:** <https://onairgarage.com/tools/g-timer/>
+- **Manual:** attached to every release as three PDFs, English (`G-Timer-Manual-EN-<version>.pdf`), Italian (`-IT-`) and Spanish (`-ES-`); the source is in `dev/manual/` (`python3 dev/manual/build.py <version> <folder>` makes the PDFs; it needs Chrome or Chromium).
 
 ## Features
 
