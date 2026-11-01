@@ -83,6 +83,8 @@ None: the app has no external technical values. Re-check the estimated minimum b
 
 G-Timer is a static web app with no server side, no accounts, no analytics and no third-party requests. Fonts are self-hosted. Your programs, your logo, the last report and the language choice are saved in your browser's `localStorage` only, under keys starting with `com.onairgarage.gtimer.`. Clearing the site data removes them, so export your programs if you want a backup.
 
+<a href="https://ko-fi.com/F8V328ADFH"><img height="36" src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" alt="Buy Me a Coffee at ko-fi.com"></a>
+
 ## Self-hosting
 
 G-Timer is plain HTML, CSS and JavaScript. It has no build step and no dependencies. Copy these files to any static web server, in any folder (all paths are relative):
@@ -169,3 +171,9 @@ Versions are `YYYY.M.N` (for example `2026.10.1`); the tag is `v` plus the versi
 Contact: [hello@onairgarage.com](mailto:hello@onairgarage.com) · <https://onairgarage.com>
 
 Fonts: [Barlow Condensed](https://github.com/jpt/barlow), [Rajdhani](https://fonts.google.com/specimen/Rajdhani) (Indian Type Foundry) and [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) (Carrois Type Design). All three are licensed under the SIL Open Font License 1.1; the license files are in [`fonts/`](fonts/).
+
+## Support
+
+This tool is free and will stay free, with source code. If it saved your day, you can leave a tip on Ko-fi: a thank-you, nothing more.
+
+<a href="https://ko-fi.com/F8V328ADFH"><img height="36" src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" alt="Buy Me a Coffee at ko-fi.com"></a>
